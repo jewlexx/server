@@ -1,6 +1,5 @@
 use axum::{
     body::{boxed, Body, BoxBody},
-    extract::Path,
     http::{Request, Response, StatusCode, Uri},
     routing::get,
     Router,
@@ -13,12 +12,10 @@ async fn file_handler(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, String
     println!("{:?}", res);
 
     if res.status() == StatusCode::NOT_FOUND {
-        // try with `.html`
-        // TODO: handle if the Uri has query parameters
-        match format!("{}.html", uri).parse() {
-            Ok(uri_html) => get_static_file(uri_html).await,
-            Err(_) => Err((StatusCode::INTERNAL_SERVER_ERROR, "Invalid URI".to_string())),
-        }
+        Ok(Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(boxed(Body::from(include_str!("../assets/error.html"))))
+            .unwrap())
     } else {
         Ok(res)
     }
